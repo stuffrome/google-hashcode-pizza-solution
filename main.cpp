@@ -3,9 +3,6 @@
 
 #include "include/Pizza.hpp"
 
-using std::cin;
-using std::cout;
-
 int main()
 {
     int rows = 0;
@@ -27,21 +24,28 @@ int main()
     {
         for (int j = 0; j < cols; ++j)
         {
-            cin >> pizza_grid[i][j];
+            std::cin >> pizza_grid[i][j];
         }
     }
 
     Pizza pizza(pizza_grid, rows, cols, min_ingr, max_cells);
 
+    //std::tuple<int, std::string> results = pizza.iterative_find();
+    //std::tuple<int, std::string> results = pizza.growing_iterative_find();
+    std::tuple<int, std::string> results = pizza.shrinking_iterative_find();
+
+    std::cout << std::get<0>(results) << std::endl << std::get<1>(results);
+
+    //std::cout << pizza.get_area_covered() << std::endl;
+
+
+    // Deallocation
+
     for (int i = 0; i < rows; ++i)
     {
-        for (int j = 0; j < cols; ++j)
-        {
-            pizza.find_slice_at(i, j);
-        }
+        delete[] pizza_grid[i];
     }
-
-    std::cout << pizza.get_slices_found() << std::endl;
+    delete[] pizza_grid;
 
     return 0;
 }

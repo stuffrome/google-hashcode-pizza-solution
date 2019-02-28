@@ -1,6 +1,9 @@
 #ifndef PIZZA_HPP
 #define PIZZA_HPP
 
+#include <sstream>
+#include <string>
+#include <tuple>
 #include "Slice.hpp"
 #include "extra.hpp"
 
@@ -10,13 +13,19 @@ public:
     Pizza(char** grid, int rows, int cols, int min_ingr, int max_cells);
 
     // Searches for a possible slice at the given position
-    void find_slice_at(int row, int col);
+    std::tuple<int, std::string> iterative_find();
+    std::tuple<int, std::string> growing_iterative_find();
+    std::tuple<int, std::string> shrinking_iterative_find();
+    //std::tuple<int, std::string, int> recursive_best_find(std::tuple<int, std::string, int> tracker, int row, int col);
+
     // Check if slice is valid
     bool check(Slice* slice);
     // Remove the slice from grid
     void cut(Slice* slice);
 
-    int get_slices_found();
+    int get_area_covered();
+
+    void append_slice(std::string* slice_list, Slice* slice);
 
     /* --- DEBUGGING --- */
     
@@ -39,7 +48,7 @@ private:
 
     char** grid;
 
-    int slices_found;
+    int area_covered;
     
 };
 
