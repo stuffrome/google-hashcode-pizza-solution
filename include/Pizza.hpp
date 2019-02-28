@@ -16,12 +16,14 @@ public:
     std::tuple<int, std::string> iterative_find();
     std::tuple<int, std::string> growing_iterative_find();
     std::tuple<int, std::string> shrinking_iterative_find();
-    //std::tuple<int, std::string, int> recursive_best_find(std::tuple<int, std::string, int> tracker, int row, int col);
+    std::tuple<int, std::string, int> recursive_best_find(std::tuple<int, std::string, int> tracker, int row, int col, char** grid);
 
     // Check if slice is valid
     bool check(Slice* slice);
+    bool check_g(Slice* slice, char** grid);
     // Remove the slice from grid
     void cut(Slice* slice);
+    void cut_g(Slice* slice, char** grid);
 
     int get_area_covered();
 

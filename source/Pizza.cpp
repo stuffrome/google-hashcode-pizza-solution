@@ -86,7 +86,7 @@ std::tuple<int, std::string> Pizza::growing_iterative_find()
                 int dim_a = std::get<0>(slice_rect_list[rect]);
                 int dim_b = std::get<1>(slice_rect_list[rect]);
 
-                Slice slice(r, c, dim_a, dim_a);
+                Slice slice(r, c, dim_a, dim_b);
 
                 if (check(&slice))
                 {
@@ -120,11 +120,12 @@ std::tuple<int, std::string> Pizza::shrinking_iterative_find()
                 int dim_a = std::get<0>(slice_rect_list[rect]);
                 int dim_b = std::get<1>(slice_rect_list[rect]);
 
-                Slice slice(r, c, dim_a, dim_a);
+                Slice slice(r, c, dim_a, dim_b);
 
                 if (check(&slice))
                 {
                     cut(&slice);
+                    //print_grid();
                     
                     ++slice_count;
                     append_slice(&slice_list, &slice);
@@ -136,74 +137,94 @@ std::tuple<int, std::string> Pizza::shrinking_iterative_find()
     return std::make_tuple(slice_count, slice_list);
 }
 
-// std::tuple<int, std::string, int> Pizza::recursive_best_find(std::tuple<int, std::string, int> tracker, int row, int col, )
-// {
-//     if (row >= ROWS || col >= COLUMNS)
-//     {
-//         return tracker;
-//     }
-//     else if (grid[row][col] == CUT_OUT)
-//     {
-//         if (col < COLUMNS - 1)
-//         {
-//             return recursive_best_find(tracker, row, ++col);
-//         }
-        
-//         return recursive_best_find(tracker, ++row, 0);
-//     }
+std::tuple<int, std::string, int> Pizza::recursive_best_find(std::tuple<int, std::string, int> tracker, int row, int col, char** grid)
+{
+    if (row >= ROWS || col >= COLUMNS || (row == ROWS - 1 && col == COLUMNS - 1))
+    {
+        return tracker;
+    }
+    else if (grid[row][col] == CUT_OUT)
+    {
+        if (col < COLUMNS - 1)
+        {
+            return recursive_best_find(tracker, row, col + 1, grid);
+        }
+        return recursive_best_find(tracker, row + 1, 0, grid);
+    }
 
-//     std::vector<std::tuple<int, std::string, int>> possible_slices;
+    std::vector<std::tuple<int, std::string, int>> possible_slices;
 
-//     // Get all possible slice rectangles
-//     std::vector<std::tuple<int, int>> slice_rect_list = get_rectangles_within(MAX_CELLS);
-//     int slice_rect_list_size = slice_rect_list.size();
+    // Get all possible slice rectangles
+    std::vector<std::tuple<int, int>> slice_rect_list = get_rectangles_within(MAX_CELLS);
+    int slice_rect_list_size = slice_rect_list.size();
 
-//     for (int rect = 0; rect < slice_rect_list_size; ++rect)
-//     {
-//         int dim_a = std::get<0>(slice_rect_list[rect]);
-//         int dim_b = std::get<1>(slice_rect_list[rect]);
+    for (int rect = 0; rect < slice_rect_list_size; ++rect)
+    {
+        int dim_a = std::get<0>(slice_rect_list[rect]);
+        int dim_b = std::get<1>(slice_rect_list[rect]);
 
-//         Slice slice(row, col, dim_a, dim_a);
+        Slice slice(row, col, dim_a, dim_b);
 
-//         if (check(&slice))
-//         {
-//             std::stringstream ss;
+        if (check_g(&slice, grid))
+        {
+            char** new_grid = new char*[ROWS];
+            for (int i = 0; i < ROWS; ++i)
+            {
+                new_grid[i] = strdup(grid[i]);
+            }
 
-//             ss << slice.row_pos << ' '
-//             << slice.col_pos << ' '
-//             << slice.row_pos + (slice.row_len - 1) << ' '
-//             << slice.col_pos + (slice.col_len - 1) << ' '
-//             << '\n';
+            cut_g(&slice, new_grid);
 
-//             std::string slice_str = ss.str();
+            std::stringstream ss;
 
-//             if (col < COLUMNS - 1)
-//             {
-//                 std::tuple<int, std::string, int> next_slice = recursive_best_find(tracker, row, ++col);
-//                 possible_slices.push_back(std::make_tuple(std::get<0>(next_slice) + 1,
-//                                                           slice_str + std::get<1>(next_slice),
-//                                                           slice.row_len * slice.col_len + std::get<2>(next_slice)));
-//             }
-            
-//             std::tuple<int, std::string, int> next_slice = recursive_best_find(tracker, ++row, 0);
-//                 possible_slices.push_back(std::make_tuple(std::get<0>(next_slice) + 1,
-//                                                           slice_str + std::get<1>(next_slice),
-//                                                           slice.row_len * slice.col_len + std::get<2>(next_slice)));
-//         }
-//     }
+            ss << slice.row_pos << ' '
+            << slice.col_pos << ' '
+            << slice.row_pos + (slice.row_len - 1) << ' '
+            << slice.col_pos + (slice.col_len - 1) << ' '
+            << '\n';
 
-//     std::tuple<int, std::string, int> best_slice = possible_slices[0];
+            std::string slice_str = ss.str();
 
-//     for (int i = 1; i < possible_slices.size(); ++i)
-//     {
-//         if (std::get<2>(possible_slices[i]) > std::get<2>(best_slice))
-//         {
-//             best_slice = possible_slices[i];
-//         }
-//     }
+            if (col < COLUMNS - 1)
+            {
+                std::tuple<int, std::string, int> next_slice = recursive_best_find(tracker, row, col + 1, new_grid);
+                possible_slices.push_back(std::make_tuple(std::get<0>(next_slice) + 1,
+                                                          slice_str + std::get<1>(next_slice),
+                                                          slice.row_len * slice.col_len + std::get<2>(next_slice)));
+            }
+            else
+            {
+                std::tuple<int, std::string, int> next_slice = recursive_best_find(tracker, row + 1, 0, new_grid);
+                possible_slices.push_back(std::make_tuple(std::get<0>(next_slice) + 1,
+                                                          slice_str + std::get<1>(next_slice),
+                                                          slice.row_len * slice.col_len + std::get<2>(next_slice)));
+            }
 
-//     return best_slice;
-// }
+            for (int i = 0; i < ROWS; ++i)
+            {
+                delete[] new_grid[i];
+            }
+            delete[] new_grid;
+        }
+    }
+
+    if (possible_slices.empty())
+    {
+        return tracker;
+    }
+
+    std::tuple<int, std::string, int> best_slice = possible_slices[0];
+
+    for (int i = 1; i < possible_slices.size(); ++i)
+    {
+        if (std::get<2>(possible_slices[i]) > std::get<2>(best_slice))
+        {
+            best_slice = possible_slices[i];
+        }
+    }
+
+    return best_slice;
+}
 
 bool Pizza::check(Slice* slice)
 {
@@ -243,7 +264,58 @@ bool Pizza::check(Slice* slice)
     return valid;
 }
 
+bool Pizza::check_g(Slice* slice, char** grid)
+{
+    int m_cnt = 0;
+    int t_cnt = 0;
+    bool valid = false;
+
+    if (slice->row_pos + slice->row_len <= ROWS && slice->col_pos + slice->col_len <= COLUMNS)
+    {
+        for (int r = slice->row_pos; r < slice->row_pos + slice->row_len; ++r)
+        {
+            for (int c = slice->col_pos; c < slice->col_pos + slice->col_len; ++c)
+            {
+                if (grid[r][c] == MUSHROOM)
+                {
+                    ++m_cnt;
+                }
+                else if (grid[r][c] == TOMATO)
+                {
+                    ++t_cnt;
+                }
+                else // Cut out
+                {
+                    return false;
+                }
+                
+            }
+        }
+    }
+    
+
+    if (m_cnt >= MIN_INGREDIENTS && t_cnt >= MIN_INGREDIENTS)
+    {
+        valid = true;
+    }
+
+    return valid;
+}
+
 void Pizza::cut(Slice* slice)
+{
+    for (int r = slice->row_pos; r < slice->row_pos + slice->row_len; ++r)
+    {
+        for (int c = slice->col_pos; c < slice->col_pos + slice->col_len; ++c)
+        {
+            ++area_covered;
+
+            grid[r][c] = 'C';
+        }
+    }
+}
+
+void Pizza::cut_g(Slice* slice, char** grid)
 {
     for (int r = slice->row_pos; r < slice->row_pos + slice->row_len; ++r)
     {

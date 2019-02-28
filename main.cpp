@@ -24,7 +24,7 @@ int main()
     {
         for (int j = 0; j < cols; ++j)
         {
-            std::cin >> pizza_grid[i][j];
+            std::cin >> pizza_grid[i][j];        
         }
     }
 
@@ -32,9 +32,13 @@ int main()
 
     //std::tuple<int, std::string> results = pizza.iterative_find();
     //std::tuple<int, std::string> results = pizza.growing_iterative_find();
-    std::tuple<int, std::string> results = pizza.shrinking_iterative_find();
+    //std::tuple<int, std::string> results = pizza.shrinking_iterative_find();
 
-    std::cout << std::get<0>(results) << std::endl << std::get<1>(results);
+    std::tuple<int, std::string, int> tracker = std::make_tuple(0, "", 0);
+    std::tuple<int, std::string, int> results = pizza.recursive_best_find(tracker, 0, 0, pizza_grid);
+
+    std::cout << std::get<0>(results) << std::endl << std::get<1>(results);// << std::get<2>(results);
+
 
     //std::cout << pizza.get_area_covered() << std::endl;
 
